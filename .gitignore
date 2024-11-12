@@ -4,6 +4,8 @@
 phone_number_*.csv
 inputs/*.csv
 
+*.json
+
 *.pkg
 old
 

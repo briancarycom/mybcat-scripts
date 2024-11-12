@@ -17,6 +17,10 @@ def aggregate_survey_results(survey_data):
     # Process each survey response
     for record in survey_data:
         timestamp = record['LastUpdateTimestamp']
+        # Add quality score processing
+        if 'quality_score' in record:
+            time_series[timestamp]['quality_score'].append(record['quality_score'])
+            
         for key, value in record.items():
             if key.startswith("survey_result_"):
                 # Normalize the score from 0-5 to 0-100%
@@ -69,6 +73,11 @@ def parse_s3_objects(bucket, prefix):
                     # Only store if we have survey data
                     if survey_attributes:
                         survey_attributes['LastUpdateTimestamp'] = record.get('LastUpdateTimestamp', '')
+                        # Add quality score if available
+                        if 'QualityMetrics' in record and 'Agent' in record['QualityMetrics']:
+                            quality_score = record['QualityMetrics']['Agent'].get('Audio', {}).get('QualityScore')
+                            if quality_score is not None:
+                                survey_attributes['quality_score'] = quality_score
                         survey_data[contact_id] = survey_attributes
             except json.JSONDecodeError as e:
                 print(f"Error parsing line: {line[:100]}... Error: {e}")
