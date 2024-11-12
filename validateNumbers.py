@@ -9,7 +9,8 @@ dynamo_df['clientDID'] = dynamo_df['clientDID'].str.replace('+', '').str.replace
 # Load Connect data from CSV and clean clientDID
 connect_df = pd.read_csv('./inputs/connect_phone_numbers.csv')
 connect_df['clientDID'] = connect_df['Phone Number'].str.replace('+', '').str.replace('-', '').str.replace(' ', '')
-connect_df = connect_df.rename(columns={'Contact flow/IVR': 'queueName'})
+connect_df['queueName'] = connect_df['Contact flow/IVR'].fillna(connect_df['Description'])
+connect_df = connect_df.rename(columns={'queueName': 'queueName'})
 
 # Perform validation
 comparison_df = pd.DataFrame(dynamo_df['queueName'])

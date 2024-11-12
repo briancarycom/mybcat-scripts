@@ -4,6 +4,7 @@
 phone_number_*.csv
 inputs/*.csv
 
+*.pkg
 old
 
 # Python
