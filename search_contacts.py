@@ -10,8 +10,8 @@ connect_client = boto3.client('connect', region_name='us-east-1')
 instance_id = "c3175ce9-154c-46cb-a559-94cdbbb3583a"
 time_range = {
     "Type": "INITIATION_TIMESTAMP",
-    "StartTime": "2024-11-12T00:00:00Z",
-    "EndTime": "2024-11-13T23:59:59Z"
+    "StartTime": "2024-11-12T18:00:00Z",
+    "EndTime": "2024-11-12T23:59:59Z"
 }
 
 # Function to fetch and extract contact details
@@ -20,6 +20,7 @@ def get_contacts(instance_id, time_range):
     next_token = None
     max_retries = 5
     base_delay = 1
+    request_delay = 0.5  # Add default delay between requests
     page_count = 0
     total_contacts = 0
 
@@ -59,6 +60,8 @@ def get_contacts(instance_id, time_range):
     print(f"\nFetching page {page_count}...")
 
     while True:
+        # Add delay between requests
+        time.sleep(request_delay)
         page_count += 1
         print(f"\nFetching page {page_count}...")
 
@@ -99,11 +102,25 @@ def get_contacts(instance_id, time_range):
 
         # Extract the required fields
         for contact in page_contacts:
+            # Get evaluation details if they exist
+            evaluations = contact.get('EvaluationData', {}).get('Evaluations', [])
+            if evaluations:
+                print(f"\nFound {len(evaluations)} evaluation(s) for contact {contact.get('Id')}:")
+                for eval in evaluations:
+                    print(f"  - Evaluation ID: {eval.get('EvaluationId')}")
+                    print(f"  - Form Name: {eval.get('EvaluationFormName')}")
+                    print(f"  - Status: {eval.get('Status')}")
+            
             contact_info = {
                 'ContactId': contact.get('Id'),
                 'AgentId': contact.get('AgentInfo', {}).get('Id'),
                 'InitiationTimestamp': contact.get('InitiationTimestamp').isoformat() if contact.get('InitiationTimestamp') else None,
-                'DisconnectTimestamp': contact.get('DisconnectTimestamp').isoformat() if contact.get('DisconnectTimestamp') else None
+                'DisconnectTimestamp': contact.get('DisconnectTimestamp').isoformat() if contact.get('DisconnectTimestamp') else None,
+                'Evaluations': [{
+                    'EvaluationId': eval.get('EvaluationId'),
+                    'FormName': eval.get('EvaluationFormName'),
+                    'Status': eval.get('Status')
+                } for eval in evaluations]
             }
             contacts.append(contact_info)
 
