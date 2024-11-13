@@ -27,7 +27,7 @@ def clean_record(record):
 
 def lambda_handler(event, context):
     try:
-        print(f"Starting lambda execution with event: {event}")
+        # print(f"Starting lambda execution with event: {event}")  # Commented out as it could contain large payloads
         
         # Add test_mode parameter check
         test_mode = event.get('queryStringParameters', {}).get('test_mode', '').lower() == 'true'
@@ -99,17 +99,17 @@ def lambda_handler(event, context):
         table_id = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
         
         # debug by printing the last record
-        print(f"Last record: {records[-1]}")
-        # Print key-value pairs of the last record
-        print("Last record key-value pairs:")
-        for key, value in records[-1].items():
-            print(f"{key}: {value}")
+        # print(f"Last record: {records[-1]}")  # Commented out detailed record data
+        # print("Last record key-value pairs:")  # Commented out verbose debugging
+        # for key, value in records[-1].items():
+        #     print(f"{key}: {value}")
 
-        # Simplified existing records check (no need to handle nested data)
+        # Simplified existing records check
         evaluation_ids = [record.get('EvaluationId') for record in records]
-        print(f"EvaluationIds: {evaluation_ids}")
+        # print(f"EvaluationIds: {evaluation_ids}")  # Commented out potentially large array
 
-        print(f"Checking for existing records with EvaluationIds: {evaluation_ids}")
+        print(f"Checking for existing records")  # Simplified message
+        
         query = f"""
             SELECT EvaluationId
             FROM `{table_id}`

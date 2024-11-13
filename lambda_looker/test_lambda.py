@@ -1,5 +1,5 @@
 import json
-from package.lambda_looker import lambda_handler
+from package.lambda_function import lambda_handler
 
 # Mock event data with the date parameter in API Gateway format
 mock_event = {
