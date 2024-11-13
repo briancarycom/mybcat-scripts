@@ -1,10 +1,18 @@
 import json
 from package.lambda_function import lambda_handler
 
-# Mock event data with the date parameter in API Gateway format
-mock_event = {
+# Mock event data for JSON response
+mock_event_json = {
     "queryStringParameters": {
-        "date": "2024-11-12"  # Date parameter inside queryStringParameters
+        "date": "2024-11-12"
+    }
+}
+
+# Mock event data for CSV response
+mock_event_csv = {
+    "queryStringParameters": {
+        "date": "2024-11-12",
+        "returnCsv": "true"
     }
 }
 
@@ -19,8 +27,12 @@ class MockContext:
 # Create a mock context object
 mock_context = MockContext()
 
-# Invoke the lambda_handler function with the mock event and context
-response = lambda_handler(mock_event, mock_context)
+# Test JSON response
+print("Testing JSON response:")
+json_response = lambda_handler(mock_event_json, mock_context)
+print(json.dumps(json_response, indent=2))
 
-# Print the response
-print(json.dumps(response, indent=2))
+# Test CSV response
+print("\nTesting CSV response:")
+csv_response = lambda_handler(mock_event_csv, mock_context)
+print(json.dumps(csv_response, indent=2))

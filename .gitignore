@@ -4,6 +4,8 @@
 phone_number_*.csv
 inputs/*.csv
 
+lambda_api/package/**
+
 *.zip
 *.json
 
@@ -53,3 +55,12 @@ env/
 # Logs
 *.log
 logs/
+
+# Package directories (except Lambda packages)
+**/package/
+!lambda_*/package/
+**/packages/
+**/node_modules/
+**/vendor/
+**/lib/
+**/libs/
