@@ -52,11 +52,17 @@ def lambda_handler(event, context):
         # Return combined results
         return {
             "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json"
+            },
             "body": json.dumps({"date": date_str, "results": combined_results})
         }
     
     except Exception as e:
         return {
             "statusCode": 500,
+            "headers": {
+                "Content-Type": "application/json"
+            },
             "body": json.dumps({"error": str(e)})
         }
