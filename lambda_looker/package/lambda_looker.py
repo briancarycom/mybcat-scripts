@@ -5,17 +5,35 @@ import requests
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from dotenv import load_dotenv
+import csv
+from io import StringIO
 
 # Configuration variables
 PROJECT_ID = "mybcat"
-DATASET_ID = "amazon_connect_evaluations"
+DATASET_ID = "amazon_connect_evaluations_test"
 TABLE_ID = "user_evaluations"
 API_ENDPOINT = "https://rmjs3kanak.execute-api.us-east-1.amazonaws.com/evaluations"
+
+def clean_record(record):
+    """Clean and transform record data before loading to BigQuery"""
+    if 'Score' in record and record['Score']:
+        try:
+            # Convert Score to float and round to nearest integer
+            record['Score'] = round(float(record['Score']))
+        except (ValueError, TypeError):
+            print(f"Warning: Invalid Score value: {record['Score']}, setting to None")
+            record['Score'] = None
+    return record
 
 def lambda_handler(event, context):
     try:
         print(f"Starting lambda execution with event: {event}")
         
+        # Add test_mode parameter check
+        test_mode = event.get('queryStringParameters', {}).get('test_mode', '').lower() == 'true'
+        if test_mode:
+            print("Running in test mode - will only process first record")
+
         # Use current date if not specified
         query_date = date.today().strftime('%Y-%m-%d')
         if event.get('queryStringParameters', {}).get('date'):
@@ -36,7 +54,7 @@ def lambda_handler(event, context):
         # Fetch data from API with parameters
         params = {
             'date': query_date,
-            'requestCsv': 'true'
+            'returnCsv': 'true'
         }
         response = requests.get(API_ENDPOINT, params=params)
         if response.status_code != 200:
@@ -47,15 +65,27 @@ def lambda_handler(event, context):
             }
         
         print("API request successful")
-        # Parse response data
-        api_data = response.json()
-        print(f"Received {len(api_data.get('results', []))} records from API")
-        if not api_data.get('results'):
+        # Parse CSV response data
+        csv_data = StringIO(response.text)
+        reader = csv.DictReader(csv_data)
+        records = list(reader)
+        print(f"Received {len(records)} records from API")
+        
+        if not records:
             print(f"No data found for date {query_date}")
             return {
                 "statusCode": 404,
                 "body": json.dumps({"error": f"No data found for date {query_date}"})
             }
+        
+        if test_mode and records:
+            records = [records[0]]  # Keep only the first record in test mode
+            print("Test mode: Processing only first record:")
+            for key, value in records[0].items():
+                print(f"{key}: {value}")
+
+        # Clean records before processing
+        records = [clean_record(record) for record in records]
         
         print(f"Initializing BigQuery client for table {PROJECT_ID}.{DATASET_ID}.{TABLE_ID}")
         # Initialize BigQuery client with credentials
@@ -68,24 +98,34 @@ def lambda_handler(event, context):
         client = bigquery.Client(credentials=credentials, project=PROJECT_ID)
         table_id = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
         
-        # Check for existing records
-        new_records = api_data['results']
-        evaluation_ids = [record['evaluation_id'] for record in new_records]  # Adjust field name as needed
-        
+        # debug by printing the last record
+        print(f"Last record: {records[-1]}")
+        # Print key-value pairs of the last record
+        print("Last record key-value pairs:")
+        for key, value in records[-1].items():
+            print(f"{key}: {value}")
+
+        # Simplified existing records check (no need to handle nested data)
+        evaluation_ids = [record.get('EvaluationId') for record in records]
+        print(f"EvaluationIds: {evaluation_ids}")
+
+        print(f"Checking for existing records with EvaluationIds: {evaluation_ids}")
         query = f"""
-            SELECT evaluation_id
+            SELECT EvaluationId
             FROM `{table_id}`
-            WHERE evaluation_id IN UNNEST(@ids)
+            WHERE EvaluationId IN UNNEST(@ids)
         """
         
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
-                bigquery.ArrayParameter("ids", "STRING", evaluation_ids),
+                bigquery.ArrayQueryParameter("ids", "STRING", evaluation_ids),
             ]
         )
         
-        existing_ids = {row['evaluation_id'] for row in client.query(query, job_config=job_config)}
-        records_to_load = [record for record in new_records if record['evaluation_id'] not in existing_ids]
+        existing_ids = {row['EvaluationId'] for row in client.query(query, job_config=job_config)}
+        # Simplified records comparison (no nested data handling needed)
+        records_to_load = [record for record in records 
+                          if record.get('EvaluationId') not in existing_ids]
         
         if not records_to_load:
             print("No new records to load")
@@ -113,7 +153,7 @@ def lambda_handler(event, context):
             "statusCode": 200,
             "body": json.dumps({
                 "message": "Data loaded successfully",
-                "records_processed": len(api_data['results']),
+                "records_processed": len(records),
                 "date": query_date
             })
         }

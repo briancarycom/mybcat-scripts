@@ -4,7 +4,8 @@ from package.lambda_looker import lambda_handler
 # Mock event data with the date parameter in API Gateway format
 mock_event = {
     "queryStringParameters": {
-        # "date": "2024-11-12"  # Date parameter inside queryStringParameters
+        # "date": "2024-11-12",  # Date parameter inside queryStringParameters
+        "test_mode": "false"
     }
 }
 
