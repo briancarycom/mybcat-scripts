@@ -78,8 +78,9 @@ def lambda_handler(event, context):
                             for contact_key, contact_value in value.items():
                                 flat_item[contact_key] = contact_value
                         elif key == 'EvaluationDetails' and isinstance(value, dict):
-                            # Extract Score from EvaluationDetails
+                            # Extract Score and EvaluationId from EvaluationDetails
                             flat_item['Score'] = value.get('Score', '')
+                            flat_item['EvaluationId'] = value.get('EvaluationId', '')
                         elif isinstance(value, (dict, list)):
                             # Handle other nested structures
                             try:
