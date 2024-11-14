@@ -3,6 +3,9 @@ from package.lambda_function import lambda_handler
 
 # Mock event data
 mock_event = {
+    'queryStringParameters': {
+        'skipS3': 'true'
+    }
     # Add any necessary mock data if the function requires input.
 }
 
