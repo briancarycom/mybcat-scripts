@@ -1,17 +1,20 @@
 import json
 from package.lambda_function import lambda_handler
 
+# Test date that can be modified in one place
+TEST_DATE = "2024-11-14"
+
 # Mock event data for JSON response
 mock_event_json = {
     "queryStringParameters": {
-        "date": "2024-11-12"
+        "date": TEST_DATE
     }
 }
 
 # Mock event data for CSV response
 mock_event_csv = {
     "queryStringParameters": {
-        "date": "2024-11-12",
+        "date": TEST_DATE,
         "returnCsv": "true"
     }
 }

@@ -51,11 +51,48 @@ def lambda_handler(event, context):
             file_content = file_obj['Body'].read().decode('utf-8')
             json_data = json.loads(file_content)
             
-            # Extract results and remove EvaluationError from each item
+            # Extract results and process each item
             results = json_data.get('results', [])
             for result in results:
+                # Remove EvaluationError
                 result.pop('EvaluationError', None)
-            combined_results.extend(results)
+                
+                # Process ContactDetails
+                if 'ContactDetails' in result and isinstance(result['ContactDetails'], dict):
+                    contact_details = result['ContactDetails']
+                    result['ContactDetails'] = {
+                        'ContactId': contact_details.get('ContactId', ''),
+                        'AgentId': contact_details.get('AgentId', ''),
+                        'AgentName': contact_details.get('AgentName', ''),
+                        'QueueId': contact_details.get('QueueId', ''),
+                        'QueueName': contact_details.get('QueueName', ''),
+                        'InitiationTimestamp': contact_details.get('InitiationTimestamp', ''),
+                        'DisconnectTimestamp': contact_details.get('DisconnectTimestamp', ''),
+                        'DurationSeconds': contact_details.get('DurationSeconds', ''),
+                        'DuringOperatingHours': contact_details.get('DuringOperatingHours', ''),
+                        'QueueTimezone': contact_details.get('QueueTimezone', ''),
+                        'LocalCallTime': contact_details.get('LocalCallTime', ''),
+                        'InitiationMethod': contact_details.get('InitiationMethod', ''),
+                        'CallStatus': contact_details.get('CallStatus', '')
+                    }
+                
+                # Process EvaluationDetails
+                if 'EvaluationDetails' in result and isinstance(result['EvaluationDetails'], dict):
+                    eval_details = result['EvaluationDetails']
+                    result['EvaluationDetails'] = {
+                        'Score': eval_details.get('Score', ''),
+                        'EvaluationId': eval_details.get('EvaluationId', '')
+                    }
+                
+                # Handle other nested structures
+                for key, value in result.items():
+                    if isinstance(value, (dict, list)) and key not in ['ContactDetails', 'EvaluationDetails']:
+                        if isinstance(value, dict):
+                            result[key] = list(value.values())[0] if value else ''
+                        else:
+                            result[key] = value[0] if value else ''
+                
+                combined_results.append(result)
         
         # Handle CSV return if requested
         if return_csv:
@@ -74,9 +111,25 @@ def lambda_handler(event, context):
                     flat_item = {}
                     for key, value in result.items():
                         if key == 'ContactDetails' and isinstance(value, dict):
-                            # Extract all fields from ContactDetails
-                            for contact_key, contact_value in value.items():
-                                flat_item[contact_key] = contact_value
+                            # Define all possible ContactDetails fields with default empty values
+                            contact_fields = {
+                                'ContactId': '',
+                                'AgentId': '',
+                                'AgentName': '',
+                                'QueueId': '',
+                                'QueueName': '',
+                                'InitiationTimestamp': '',
+                                'DisconnectTimestamp': '',
+                                'DurationSeconds': '',
+                                'DuringOperatingHours': '',
+                                'QueueTimezone': '',
+                                'LocalCallTime': '',
+                                'InitiationMethod': '',
+                                'CallStatus': ''
+                            }
+                            # Update with actual values if they exist
+                            for field, default in contact_fields.items():
+                                flat_item[field] = value.get(field, default)
                         elif key == 'EvaluationDetails' and isinstance(value, dict):
                             # Extract Score and EvaluationId from EvaluationDetails
                             flat_item['Score'] = value.get('Score', '')
@@ -94,8 +147,12 @@ def lambda_handler(event, context):
                             flat_item[key] = value
                     flattened_results.append(flat_item)
 
-                # Get headers from the first item's keys
-                fieldnames = list(flattened_results[0].keys())
+                # Get headers from all possible fields across all items
+                fieldnames = set()
+                for item in flattened_results:
+                    fieldnames.update(item.keys())
+                fieldnames = sorted(list(fieldnames))  # Convert to sorted list for consistent column ordering
+                
                 writer = csv.DictWriter(output, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(flattened_results)
