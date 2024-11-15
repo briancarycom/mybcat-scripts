@@ -4,6 +4,8 @@
 phone_number_*.csv
 inputs/*.csv
 
+lambda_looker/package/rsa/
+lambda_looker/package/six.py
 lambda_looker/package/six-1.16.0.dist-info/
 lambda_looker/package/urllib3-2.2.3.dist-info/
 lambda_looker/package/urllib3/
@@ -88,7 +90,7 @@ lambda_api/package/**
 !**/package/requirements.txt
 !**/package/*.py
 
-
+lambda_looker/package/six.py
 *.zip
 *.json
 
