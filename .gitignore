@@ -6,7 +6,10 @@ inputs/*.csv
 
 lambda_looker/package/pyasn1/
 lambda_looker/package/requests/
-
+lambda_looker/package/google/
+lambda_looker/package/dateutil/
+lambda_looker/package/charset_normalizer/
+lambda/package/urllib3/
 # Ignore everything inside the package directories in any lambda subdirectory
 **/package/botocore/
 **/package/dateutil/
