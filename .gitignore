@@ -91,6 +91,14 @@ lambda_api/package/**
 !**/package/*.py
 
 lambda_looker/package/six.py
+lambda_looker/package/pyasn1_modules-0.4.1.dist-info/
+lambda/package/boto3-1.34.69.dist-info/
+lambda/package/bin/
+lambda/package/boto3/
+lambda/package/botocore-1.34.69.dist-info/
+lambda/package/s3transfer-0.10.3.dist-info/
+
+
 *.zip
 *.json
 
