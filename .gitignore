@@ -4,7 +4,51 @@
 phone_number_*.csv
 inputs/*.csv
 
+# Ignore everything inside the package directories in any lambda subdirectory
+**/package/botocore/
+**/package/dateutil/
+**/package/jmespath-*.dist-info/
+**/package/jmespath/
+**/package/python_dateutil-*.dist-info/
+**/package/s3transfer-*.dist-info/
+**/package/s3transfer/
+**/package/six-*.dist-info/
+**/package/six.py
+**/package/urllib3-*.dist-info/
+**/package/urllib3/
+**/package/google/
+**/package/google_api_core-*.dist-info/
+**/package/google_auth-*.dist-info/
+**/package/google_cloud_bigquery-*.dist-info/
+**/package/google_cloud_core-*.dist-info/
+**/package/google_crc32c-*.dist-info/
+**/package/google_resumable_media-*.dist-info/
+**/package/googleapis_common_protos-*.dist-info/
+**/package/idna-*.dist-info/
+**/package/idna/
+**/package/packaging-*.dist-info/
+**/package/packaging/
+**/package/proto/
+**/package/proto_plus-*.dist-info/
+**/package/protobuf-*.dist-info/
+**/package/pyasn1-*.dist-info/
+**/package/pyasn1_modules-*.dist-info/
+**/package/requests-*.dist-info/
+**/package/requests/
+**/package/rsa-*.dist-info/
+**/package/rsa/
 lambda_api/package/**
+**/package/dotenv/
+**/package/google_auth-*.dist-info/
+**/package/python_dotenv-*.dist-info/
+
+# Ignore everything inside package directories
+**/package/*
+
+# Allow requirements.txt and Python files directly under package directories
+!**/package/requirements.txt
+!**/package/*.py
+
 
 *.zip
 *.json
