@@ -73,7 +73,8 @@ def lambda_handler(event, context):
                         'QueueTimezone': contact_details.get('QueueTimezone', ''),
                         'LocalCallTime': contact_details.get('LocalCallTime', ''),
                         'InitiationMethod': contact_details.get('InitiationMethod', ''),
-                        'CallStatus': contact_details.get('CallStatus', '')
+                        'CallStatus': contact_details.get('CallStatus', ''),
+                        'CallerSurveyResponse1': contact_details.get('CallerSurveyResponse1', '')
                     }
                 
                 # Process EvaluationDetails
@@ -125,7 +126,8 @@ def lambda_handler(event, context):
                                 'QueueTimezone': '',
                                 'LocalCallTime': '',
                                 'InitiationMethod': '',
-                                'CallStatus': ''
+                                'CallStatus': '',
+                                'CallerSurveyResponse1': ''
                             }
                             # Update with actual values if they exist
                             for field, default in contact_fields.items():
