@@ -149,8 +149,8 @@ def lambda_handler(event, context):
         # Handle abandoned calls (no queue or agent)
         if not queue_id:
             print("No queue ID found - likely an abandoned call")
-            if contact_details:
-                print("Contact details:", json.dumps(contact_details, indent=2, default=str))
+            # if contact_details:
+            #     print("Contact details:", json.dumps(contact_details, indent=2, default=str))
             return {
                 'during_hours': None,  # Using None to indicate abandoned call
                 'timezone': 'UTC',
@@ -299,6 +299,22 @@ def lambda_handler(event, context):
             print(f"Retrieved {len(page_contacts)} contacts. Total: {total_contacts}")
 
             for index, contact in enumerate(page_contacts, 1):
+                print(f'Processing contact: {contact.get("Id")}')
+
+                # Get contact attributes
+                try:
+                    attributes_response = retry_with_backoff(
+                        client.get_contact_attributes,
+                        InstanceId=instance_id,
+                        InitialContactId=contact.get('InitialContactId', contact.get('Id'))
+                    )
+                    contact_attributes = attributes_response.get('Attributes', {})
+                    print(f"Contact attributes: {contact_attributes}")
+                except Exception as e:
+                    print(f"Error getting attributes for contact {contact.get('Id')}: {str(e)}")
+                    contact_attributes = {}
+
+                # Add the rest of your contact processing logic here
                 queue_id = contact.get('QueueInfo', {}).get('Id')
                 agent_id = contact.get('AgentInfo', {}).get('Id')
                 initiation_timestamp = contact.get('InitiationTimestamp')
@@ -318,7 +334,7 @@ def lambda_handler(event, context):
                     contact,  # Pass the full contact details for better debugging
                     {'current': total_contacts - len(page_contacts) + index, 'total': total_contacts}
                 )
-                
+
                 # Determine call status
                 call_status = 'ABANDONED'
                 if queue_id and agent_id:
@@ -326,7 +342,8 @@ def lambda_handler(event, context):
                 elif queue_id and not agent_id:
                     call_status = 'QUEUE_ABANDONED'
                 
-                contacts.append({
+                # Add attributes to the contact info
+                contact_info = {
                     'ContactId': contact.get('Id'),
                     'AgentId': agent_id,
                     'AgentName': get_agent_name(agent_id),
@@ -339,8 +356,10 @@ def lambda_handler(event, context):
                     'QueueTimezone': during_hours_result.get('timezone'),
                     'LocalCallTime': during_hours_result.get('local_time'),
                     'InitiationMethod': contact.get('InitiationMethod'),
-                    'CallStatus': call_status
-                })
+                    'CallStatus': call_status,
+                    'CallerSurveyResponse1': int(contact_attributes.get('survey_result_1', 0)) if contact_attributes.get('survey_result_1') else None,
+                }
+                contacts.append(contact_info)
 
             next_token = response.get('NextToken')
             if not next_token:
@@ -377,7 +396,7 @@ def lambda_handler(event, context):
                                 InstanceId=instance_id,
                                 EvaluationId=evaluation['EvaluationId']
                             )
-                            
+
                             if evaluation_details:
                                 score = evaluation_details.get('Evaluation', {}).get('Metadata', {}).get('Score', {}).get('Percentage')
                                 
@@ -409,7 +428,8 @@ def lambda_handler(event, context):
         # Search for contacts
         print("Step 1: Searching for contacts...")
         contacts = search_contacts()
-        
+        # print(f"Contacts: {contacts}")
+
         # Get evaluations for contacts
         print("\nStep 2: Getting evaluations...")
         evaluation_results = get_evaluations(contacts)

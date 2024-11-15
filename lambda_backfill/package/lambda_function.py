@@ -12,7 +12,7 @@ import time
 
 # Configuration
 UPDATE_BIGQUERY = True  # Changed to True to perform the update
-DATES_TO_BACKFILL = ['2024-11-12']
+DATES_TO_BACKFILL = ['2024-11-13']
 TEST_MODE = False  # Keeping test mode on to process only the sample
 SAMPLE_EVAL_ID = "7d582bdd-0ddc-445e-8396-0b139af768ba"
 SAMPLE_CONTACT_ID = "a24b289a-426b-4a9e-a449-548dd52d3900"
@@ -299,10 +299,7 @@ def lambda_handler(event, context):
                             QueueTimezone = @queue_timezone,
                             LocalCallTime = FORMAT_TIMESTAMP('%Y-%m-%d %H:%M:%E6S%Ez', @local_call_time),
                             InitiationMethod = @initiation_method,
-                            DuringOperatingHours = CASE 
-                                WHEN @during_hours THEN 'true'
-                                ELSE 'false'
-                            END,
+                            DuringOperatingHours = CAST(@during_hours AS STRING),
                             CallStatus = @call_status
                         WHERE EvaluationId = @eval_id
                     """
