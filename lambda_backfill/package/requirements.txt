@@ -1,0 +1,6 @@
+boto3
+requests
+google-cloud-bigquery
+google-oauth2-tool
+python-dotenv
+pytz

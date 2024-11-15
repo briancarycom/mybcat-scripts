@@ -4,6 +4,8 @@
 phone_number_*.csv
 inputs/*.csv
 
+lambda_backfill/package/google_auth_httplib2.py
+lambda_backfill/package/six.py
 lambda_looker/package/rsa/
 lambda_looker/package/six.py
 lambda_looker/package/six-1.16.0.dist-info/

@@ -149,8 +149,8 @@ def lambda_handler(event, context):
         # Handle abandoned calls (no queue or agent)
         if not queue_id:
             print("No queue ID found - likely an abandoned call")
-            # if contact_details:
-            #     print("Contact details:", json.dumps(contact_details, indent=2, default=str))
+            if contact_details:
+                print("Contact details:", json.dumps(contact_details, indent=2, default=str))
             return {
                 'during_hours': None,  # Using None to indicate abandoned call
                 'timezone': 'UTC',
