@@ -299,7 +299,10 @@ def lambda_handler(event, context):
                             QueueTimezone = @queue_timezone,
                             LocalCallTime = FORMAT_TIMESTAMP('%Y-%m-%d %H:%M:%E6S%Ez', @local_call_time),
                             InitiationMethod = @initiation_method,
-                            DuringOperatingHours = CAST(@during_hours AS STRING),
+                            DuringOperatingHours = CASE 
+                                WHEN @during_hours THEN 'true'
+                                ELSE 'false'
+                            END,
                             CallStatus = @call_status
                         WHERE EvaluationId = @eval_id
                     """
