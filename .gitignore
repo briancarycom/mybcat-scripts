@@ -4,6 +4,9 @@
 phone_number_*.csv
 inputs/*.csv
 
+lambda_looker/package/pyasn1/
+lambda_looker/package/requests/
+
 # Ignore everything inside the package directories in any lambda subdirectory
 **/package/botocore/
 **/package/dateutil/
